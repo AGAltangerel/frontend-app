@@ -1,0 +1,40 @@
+# Node.js with Vue
+# Build a Node.js project that uses Vue.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- dev
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Azure for Students(1137971f-42bb-4fd3-969f-9c7be7cad265)'
+    scriptType: 'bash'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      docker build -t registry001.azurecr.io/data-collect:tag .
+      az acr login -n registry001
+      docker push registry001.azurecr.io/data-collect:tag
+
+- script: cat 01_kubernetes_aks/app-deploy.yml
+
+- task: Kubernetes@1
+  inputs:
+    connectionType: 'Azure Resource Manager'
+    azureSubscriptionEndpoint: 'Azure for Students(1137971f-42bb-4fd3-969f-9c7be7cad265)'
+    azureResourceGroup: 'DataCollectResource'
+    kubernetesCluster: 'cluster0001'
+    namespace: 'default'
+    command: 'apply'
+    useConfigurationFile: true
+    configuration: '01_kubernetes_aks'
+    secretType: 'dockerRegistry'
+    containerRegistryType: 'Azure Container Registry'
+    azureSubscriptionEndpointForSecrets: 'Azure for Students(1137971f-42bb-4fd3-969f-9c7be7cad265)'
+    azureContainerRegistry: 'registry001.azurecr.io'
+    forceUpdate: false
