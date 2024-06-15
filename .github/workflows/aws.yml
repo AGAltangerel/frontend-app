@@ -35,7 +35,7 @@ env:
   ECR_REPOSITORY: altangerel.me           # set this to your Amazon ECR repository name
   ECS_SERVICE: MyElasticService                 # set this to your Amazon ECS service name
   ECS_CLUSTER: DataCollectCluster                 # set this to your Amazon ECS cluster name
-  ECS_TASK_DEFINITION: TaskDefinitionFamily # set this to the path to your Amazon ECS task definition
+  ECS_TASK_DEFINITION: TaskDefinitionFamily:2 # set this to the path to your Amazon ECS task definition
                                                # file, e.g. .aws/task-definition.json
   CONTAINER_NAME: backed           # set this to the name of the container in the
                                                # containerDefinitions section of your task definition
