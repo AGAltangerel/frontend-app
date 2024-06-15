@@ -1,6 +1,18 @@
-<template>
-    <div>
-        <h1>Home Page</h1>
-        <p>This is the home page. You can see this page even if you are not logged in.</p>
-    </div>
+<template class="container">
+    <main>
+        <thermal_data></thermal_data>
+    </main>
 </template>
+
+<script>
+import thermal_data from '~/components/thermal_data/index.vue';
+
+export default {
+    name: "IndexPage",
+    components: {
+        thermal_data
+    }
+}
+</script>
+<style scoped>
+</style>

@@ -1,5 +1,5 @@
 <template>
-    <main>
+    <UContainer :ui="{constrained: 'max-w-2xl'}">
         <header>
             <slot name="header"></slot>
         </header>
@@ -7,5 +7,12 @@
         <footer>
             <slot name="footer"></slot>
         </footer>
-    </main>
+    </UContainer>
 </template>
+
+<script>
+export default {
+    name: 'DefaultLayout',
+    middleware: 'auth',
+}
+</script>

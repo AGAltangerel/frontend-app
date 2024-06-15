@@ -10,13 +10,21 @@ export default defineNuxtConfig({
       autoprefixer: {},
     },
   },
+  router: {
+    middleware: ['auth'], // Ensure it's an array
+  },
+  ui: {
+    container: {
+      constrained: 'max-w-5xl'
+    }
+  },
   buildModules: [
     '@nuxt/typescript-build',
     '@nuxtjs/tailwindcss',
   ],
-  plugins: [ '~/plugins/axios.ts' ],
+  plugins: ['~/plugins/axios.ts'],
   components: true,
-  build: { 
-    transpile: ['/^@nuxt/']
+  build: {
+    transpile: ['/^@nuxt/'],
   },
 })
