@@ -1,5 +1,5 @@
 <template>
-    <main class="bg-slate-200">
+    <main class="bg-black">
         <header>
             <slot name="header"></slot>
         </header>

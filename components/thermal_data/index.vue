@@ -1,5 +1,5 @@
 <template>
-  <v-container class="h-100">
+  <v-container class="h-100 bg-slate-10">
     <v-form v-model="valid" ref="form">
       <v-row>
         <!-- Loop through formFields for text fields -->
@@ -8,6 +8,7 @@
             v-model="form[field.key]"
             :label="field.label"
             :rules="[rules.required]"
+            :type="field.type"
           ></v-text-field>
         </v-col>
         <!-- Custom v-select for permissionsToCopy -->
@@ -29,21 +30,27 @@
           </v-select>
         </v-col>
         <v-col cols="12">
-          <v-btn @click="submitForm">Submit</v-btn>
+          <v-btn elevation="2" color="secondary" :loading="loading" :disabled="loading" @click.prevent="submitForm">Submit</v-btn>
         </v-col>
       </v-row>
     </v-form>
+    <br/>
 
     <v-data-table
       :headers="headers"
       :items="serverItems"
       :items-per-page="itemsPerPage"
       :loading="loading"
+      :sortable="true"
+      :background-color="'#00000'"
     ></v-data-table>
   </v-container>
 </template>
 
 <script lang="ts">
+
+import { decodeToken } from "~/utils/jwt.js";
+
 export default {
   middleware: 'auth',
   data() {
@@ -69,16 +76,15 @@ export default {
         is_brim_open: '',
       },
       formFields: [
-        { key: 'inside_temperature', label: 'Inside Temperature' },
-        { key: 'inside_humidity', label: 'Inside Humidity' },
-        { key: 'outside_temperature', label: 'Outside Temperature' },
-        { key: 'outside_humidity', label: 'Outside Humidity' },
-        { key: 'heart_rate', label: 'Heart Rate' },
-        { key: 'skin_temperature', label: 'Skin Temperature' },
-        { key: 'metabolic_rate', label: 'Metabolic Rate' },
-        { key: 'activity_level', label: 'Activity Level' },
-        { key: 'clothing_level', label: 'Clothing Level' },
-        { key: 'sleep_point', label: 'Sleep Point' },
+        { key: 'inside_temperature', label: 'Inside Temperature', type: 'number', },
+        { key: 'inside_humidity', label: 'Inside Humidity', type: 'number'},
+        { key: 'outside_temperature', label: 'Outside Temperature', type: 'number'},
+        { key: 'outside_humidity', label: 'Outside Humidity', type: 'number'},
+        { key: 'heart_rate', label: 'Heart Rate', type: 'number'},
+        { key: 'skin_temperature', label: 'Skin Temperature', type: 'number'},
+        { key: 'metabolic_rate', label: 'Metabolic Rate', type: 'number'},
+        { key: 'activity_level', label: 'Activity Level', type: 'number'},
+        { key: 'sleep_point', label: 'Sleep Point', type: 'number'},
       ],
       form_with_options: [
         { 
@@ -114,13 +120,40 @@ export default {
         { key: 'is_brim_open', label: 'Is Brim open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}]},
         { key: 'is_door_open', label: 'Is Door Open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
         { key: 'is_user_come_in', label: 'Is User Come In', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
-        // { key: 'weather_condition', label: 'Weather Condition' options: [{"id"}]},
+        { key: 'is_window_open', label: 'Is Window Open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
+        { key: 'weather_condition', label: 'Weather Condition', options: [
+          {"id": "Clear", "description": "Clear"}, 
+          {"id": "Cloudy", "description": "Cloudy"}, 
+          {"id": "Sunny", "description": "Sunny"}, 
+          {"id": "Foggy", "description": "Foggy"}, 
+          {"id": "Rainy", "description": "Rainy"}, 
+          {"id": "Windy", "description": "Windy"}
+        ]},
+        { key: 'clothing_level', label: 'Clothing Level', options: [
+            {"description": "Walking shorts, short-sleeved shirt", "id": 0.36},
+            {"description": "Knee-length skirt, short-sleeved shirt, panty hose, sandals", "id": 0.54},
+            {"description": "Trousers, short-sleeved shirt", "id": 0.57},
+            {"description": "Trousers, long-sleeved shirt", "id": 0.61},
+            {"description": "Knee-length skirt, long-sleeved shirt, full slip, panty hose", "id": 0.67},
+            {"description": "Long-sleeved coveralls, T-shirt", "id": 0.72},
+            {"description": "Sweat pants, sweat shirt", "id": 0.74},
+            {"description": "Overalls, long-sleeved shirt, T-shirt", "id": 0.89},
+            {"description": "Long-sleeved pajama top, long pajama trousers, short 3/4 sleeved robe, slippers (no socks)", "id": 0.96},
+            {"description": "Same as above, plus suit jacket", "id": 0.96},
+            {"description": "Same as above, plus vest and T-shirt", "id": 0.96},
+            {"description": "Trousers, long-sleeved shirt, long-sleeved sweater, T-shirt", "id": 1.01},
+            {"description": "Knee-length skirt, long-sleeved shirt, half slip, panty hose, suit jacket", "id": 1.04},
+            {"description": "Ankle-length skirt, long-sleeved shirt, suit jacket, panty hose", "id": 1.10},
+            {"description": "Knee-length skirt, long-sleeved shirt, half slip, panty hose, long-sleeved sweater", "id": 1.10},
+            {"description": "Same as above, plus suit jacket and long underwear bottoms", "id": 1.30},
+            {"description": "Insulated coveralls, long-sleeved thermal underwear, long underwear bottoms", "id": 1.37},
+        ]},
       ],
       rules: {
-        required: value => !!value || 'Required.',
+        required: (value:[string, number]) => !!value || 'Required.',
       },
       headers: [
-        { text: 'ID', value: 'id', align: 'end' },
+        { text: 'ID', value: 'id', align: 'end', sortable: true},
         { text: 'Comfort Point', value: 'comfort_point.description', align: 'center', sortable: true },
         { text: 'Created Date', value: 'created_date', align: 'end' },
         { text: 'Modified Date', value: 'modified_date', align: 'end' },
@@ -146,36 +179,60 @@ export default {
       loading: true,
       totalItems: 0,
       itemsPerPage: 5,
+      access_token: null,
+      participants: 0,
+      isLoading: false,
     }
   },
   methods: {
     loadItems() {
       this.loading = true;
       this.$axios.get('/thermaldata/')
-        .then((response) => {
+        .then((response: any) => {
           console.log(response.data);
           this.serverItems = response.data.results;
           this.totalItems = response.count;
           this.loading = false;
-        }).catch((error) => {
+        }).catch((error: any) => {
           this.loading = false;
           console.error('Failed to fetch thermal data: ' + error);
         });
     },
     submitForm() {
+      this.isLoading = true;
       if (this.$refs.form.validate()) {
-        this.$axios.post('/thermaldata/', this.form)
-          .then(response => {
+        console.log(this.form)
+        const temp_form: any = {};
+
+        for(const key in this.form) {
+          if (typeof(this.form[key]) === 'object') {
+            temp_form[key] = this.form[key].id;
+          } else {
+            temp_form[key] = this.form[key];
+          }
+        }
+
+        // Add participant field'
+        console.log("participants");
+        console.log(this.participants);
+        temp_form['participant'] = this.participants.filter(item => item.user == this.access_token['user_id'])[0].id;
+
+        console.log("revised form")
+        console.log(temp_form)
+
+        this.$axios.post('/thermaldata/', temp_form)
+          .then((response: any) => {
             console.log('Data added:', response.data);
             this.loadItems();  // Reload items to show the new data
             this.$refs.form.reset();
+            this.isLoading = false;
           })
-          .catch(error => {
+          .catch((error: any) => {
             console.error('Failed to add data: ' + error);
           });
       }
     },
-    convertToReadableText(item) {
+    convertToReadableText(item: any) {
       return item.props.title.description;
     },
     generateTimeChoices() {
@@ -185,7 +242,7 @@ export default {
       endTime.setHours(23, 0, 0, 0); // 11:00 PM
       const timeList = [];
 
-      const options = { hour: 'numeric', minute: 'numeric', hour12: true };
+      const options = { hour: '2-digit', minute: '2-digit', hour12: true };
 
       while (startTime <= endTime) {
         const timeStr = startTime.toLocaleTimeString('en-US', options);
@@ -195,11 +252,25 @@ export default {
 
       return timeList;
     },
+    getAccessToken() {
+      return decodeToken(localStorage.getItem('access_token'));
+    },
+    getParticipants() {
+      this.$axios.get('/participants/')
+        .then((response: any) => {
+          console.log(response.data); 
+          this.participants = response.data.results;
+        }).catch((error: any) => {
+          console.error('Failed to fetch participants: ' + error);
+        });
+    }
   },
   mounted() {
     this.loadItems();
+    this.access_token = this.getAccessToken();
   },
   created() {
+    this.getParticipants();
     this.form_with_options[2].options = this.generateTimeChoices();
   }
 }
