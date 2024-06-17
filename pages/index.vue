@@ -1,4 +1,4 @@
-<template class="container">
+<template>
     <main>
         <thermal_data></thermal_data>
     </main>
