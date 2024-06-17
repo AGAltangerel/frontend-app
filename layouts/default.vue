@@ -1,13 +1,13 @@
 <template>
-    <UContainer :ui="{constrained: 'max-w-2xl'}">
+    <main class="bg-slate-200">
         <header>
             <slot name="header"></slot>
         </header>
-        <NuxtPage />
+            <NuxtPage />
         <footer>
             <slot name="footer"></slot>
         </footer>
-    </UContainer>
+    </main>
 </template>
 
 <script>
