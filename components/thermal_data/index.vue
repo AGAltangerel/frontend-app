@@ -1,5 +1,5 @@
 <template>
-  <v-container class="h-100 bg-slate-10">
+  <v-container class="h-100 w-80 bg-slate-10">
     <v-form v-model="valid" ref="form">
       <v-row>
         <!-- Loop through formFields for text fields -->
@@ -36,14 +36,46 @@
     </v-form>
     <br/>
 
-    <v-data-table
-      :headers="headers"
-      :items="serverItems"
-      :items-per-page="itemsPerPage"
-      :loading="loading"
-      :sortable="true"
-      :background-color="'#00000'"
-    ></v-data-table>
+    <v-card
+      title="Thermal Data"
+      flat
+    >
+      <template v-slot:text>
+        <v-text-field
+          v-model="search"
+          label="Search"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          hide-details
+          single-line
+        ></v-text-field>
+      </template>
+
+      <v-data-table
+        :headers="headers"
+        :items="serverItems"
+        :items-per-page="itemsPerPage"
+        :loading="loading"
+        :sortable="true"
+        :search="search"
+      >
+        <template v-slot:item.participant="{ item }">
+          <div class="text-end">({{ item.participant}}). {{ participants.filter(participant => participant.id == item.participant)[0].gender }}</div>
+        </template>
+
+        <template v-slot:item.comfort_point="{ item }">
+          <div class="text-center"> {{ form_with_options.find(i => i.key === "comfort_point")?.options.find(j => j.id == item.comfort_point)?.description }} </div>
+        </template>
+
+        <template v-slot:item.created_date="{ item }">
+          <div class="text-center">{{ item.created_date.split("T")[0] }}</div>
+        </template>
+
+        <template v-slot:item.ger="{ item }">
+          <div class="text-center "> {{ form_with_options.find(i => i.key === "ger")?.options.find(j => j.id == item.ger)?.name }} </div>
+        </template>
+      </v-data-table>
+    </v-card>
   </v-container>
 </template>
 
@@ -56,6 +88,7 @@ export default {
   data() {
     return {
       valid: false,
+      search: '',
       form: {
         comfort_point: null,
         ger: '',
@@ -68,7 +101,7 @@ export default {
         heart_rate: '',
         skin_temperature: '',
         metabolic_rate: '',
-        activity_level: '',
+        // activity_level: '',
         clothing_level: '',
         sleep_point: '',
         is_user_come_in: '',
@@ -83,7 +116,7 @@ export default {
         { key: 'heart_rate', label: 'Heart Rate', type: 'number'},
         { key: 'skin_temperature', label: 'Skin Temperature', type: 'number'},
         { key: 'metabolic_rate', label: 'Metabolic Rate', type: 'number'},
-        { key: 'activity_level', label: 'Activity Level', type: 'number'},
+        // { key: 'activity_level', label: 'Activity Level', type: 'number'},
         { key: 'sleep_point', label: 'Sleep Point', type: 'number'},
       ],
       form_with_options: [
@@ -153,27 +186,27 @@ export default {
         required: (value:[string, number]) => !!value || 'Required.',
       },
       headers: [
-        { text: 'ID', value: 'id', align: 'end', sortable: true},
-        { text: 'Comfort Point', value: 'comfort_point.description', align: 'center', sortable: true },
-        { text: 'Created Date', value: 'created_date', align: 'end' },
-        { text: 'Modified Date', value: 'modified_date', align: 'end' },
-        { text: 'Timestamp', value: 'timestamp', align: 'end' },
-        { text: 'Weather Condition', value: 'weather_condition', align: 'end' },
-        { text: 'Inside Temperature', value: 'inside_temperature', align: 'end' },
-        { text: 'Inside Humidity', value: 'inside_humidity', align: 'end' },
-        { text: 'Outside Temperature', value: 'outside_temperature', align: 'end' },
-        { text: 'Outside Humidity', value: 'outside_humidity', align: 'end' },
-        { text: 'Heart Rate', value: 'heart_rate', align: 'end' },
-        { text: 'Skin Temperature', value: 'skin_temperature', align: 'end' },
-        { text: 'Metabolic Rate', value: 'metabolic_rate', align: 'end' },
-        { text: 'Activity Level', value: 'activity_level', align: 'end' },
-        { text: 'Clothing Level', value: 'clothing_level', align: 'end' },
-        { text: 'Sleep Point', value: 'sleep_point', align: 'end' },
-        { text: 'Is User Come In', value: 'is_user_come_in', align: 'end' },
-        { text: 'Is Door Open', value: 'is_door_open', align: 'end' },
-        { text: 'Is Window Open', value: 'is_window_open', align: 'end' },
-        { text: 'Is Brim Open', value: 'is_brim_open', align: 'end' },
-        { text: 'Participant', value: 'participant', align: 'end' },
+        { title: 'ID', value: 'id', align: 'end', sortable: true },
+        { title: 'Participant', value: 'participant', align: 'end' },
+        { title: 'Comfort Point', value: 'comfort_point', align: 'center', sortable: true },
+        { title: 'Created Date', value: 'created_date', align: 'end', sortable: true },
+        { title: 'Ger', value: 'ger', align: 'end' },
+        { title: 'Timestamp', value: 'timestamp', align: 'end' },
+        { title: 'Weather Condition', value: 'weather_condition', align: 'end' },
+        { title: 'Inside Temperature (°C)', value: 'inside_temperature', align: 'end', sortable: true},
+        { title: 'Inside Humidity (%)', value: 'inside_humidity', align: 'end', sortable: true},
+        { title: 'Outside Temperature (°C)', value: 'outside_temperature', align: 'end', sortable: true },
+        { title: 'Outside Humidity (%)', value: 'outside_humidity', align: 'end', sortable: true },
+        { title: 'Heart Rate (bpm)', value: 'heart_rate', align: 'end', sortable: true },
+        { title: 'Skin Temperature (°C)', value: 'skin_temperature', align: 'end', sortable: true},
+        { title: 'Metabolic Rate (Cal)', value: 'metabolic_rate', align: 'end', sortable: true},
+        // { title: 'Activity Level (METs)', value: 'activity_level', align: 'end' },
+        { title: 'Clothing Level (clo)', value: 'clothing_level', align: 'end' },
+        { title: 'Sleep Point', value: 'sleep_point', align: 'end' },
+        { title: 'Is User Come In', value: 'is_user_come_in', align: 'end' },
+        { title: 'Is Door Open', value: 'is_door_open', align: 'end' },
+        { title: 'Is Window Open', value: 'is_window_open', align: 'end' },
+        { title: 'Is Brim Open', value: 'is_brim_open', align: 'end' },
       ],
       serverItems: [],
       loading: true,
@@ -213,12 +246,7 @@ export default {
         }
 
         // Add participant field'
-        console.log("participants");
-        console.log(this.participants);
         temp_form['participant'] = this.participants.filter(item => item.user == this.access_token['user_id'])[0].id;
-
-        console.log("revised form")
-        console.log(temp_form)
 
         this.$axios.post('/thermaldata/', temp_form)
           .then((response: any) => {
@@ -258,7 +286,6 @@ export default {
     getParticipants() {
       this.$axios.get('/participants/')
         .then((response: any) => {
-          console.log(response.data); 
           this.participants = response.data.results;
         }).catch((error: any) => {
           console.error('Failed to fetch participants: ' + error);
@@ -270,8 +297,8 @@ export default {
     this.access_token = this.getAccessToken();
   },
   created() {
-    this.getParticipants();
     this.form_with_options[2].options = this.generateTimeChoices();
+    this.getParticipants();
   }
 }
 </script>

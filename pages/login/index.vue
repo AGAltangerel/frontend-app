@@ -1,6 +1,6 @@
 <template>
     <main>
-        <div class="min-h-screen flex items-center justify-center bg-gray-700 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="min-h-screen flex items-center justify-center bg-black py-12 px-4 sm:px-6 lg:px-8">
             <div class="max-w-ws space-y-8">
                 <div>
                     <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-200">
@@ -18,19 +18,19 @@
                                     id="username"
                                     autocomplete="Altangerel"
                                     required
-                                    class="appearance-none rounded-2xl relative block w-full mb-7 px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-2xl focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                    class="appearance-none rounded-2xl relative block w-full mb-7 bg-zinc-950 px-3 py-3 border text-white border-gray-300 placeholder-gray-200 text-gray-900 rounded-2xl focus:bg-zinc-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                     placeholder="Username"
                                 />
                             </div>
                             <div>
                                 <label for="password" class="sr-only">Password</label>
                                 <input 
-                                    type="text" 
+                                    type="password" 
                                     v-model="password"
                                     name="password"
                                     id="password"
                                     required
-                                    class="appearance-none rounded-2xl relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-2xl focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                                    class="appearance-none rounded-2xl relative block w-full bg-zinc-950 px-3 py-3 border text-white border-white placeholder-gray-200 text-gray-900 rounded-2xl focus:bg-zinc-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                                     placeholder="Password"
                                 />
                             </div>
@@ -40,7 +40,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-96 group relative flex justify-center py-4 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</button>
+                    <button type="submit" class="w-96 group relative flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</button>
                 </form>
             </div>
         </div>
