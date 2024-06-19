@@ -4,7 +4,7 @@ import axios from 'axios'
 export default defineNuxtPlugin((nuxtApp) => { 
     // set the base URL for axios
     const instance = axios.create({
-        baseURL: 'https://thinkitsfree.azurewebsites.net/'
+        baseURL: process.env.NODE_ENV !== "production" ? 'http://localhost:8000/' : 'https://thinkitsfree.azurewebsites.net/'
     })
 
     // Interceptor to tattach the token to each request
