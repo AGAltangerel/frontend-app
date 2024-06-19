@@ -37,18 +37,27 @@
     <br/>
 
     <v-card
-      title="Thermal Data"
+      title=""
       flat
     >
       <template v-slot:text>
-        <v-text-field
-          v-model="search"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          hide-details
-          single-line
-        ></v-text-field>
+        <v-row>
+          <v-col cols="12" md="5">
+            <v-text-field
+              v-model="search"
+              append-icon="mdi-magnify"
+              label="Search"
+              single-line
+              hide-details
+            ></v-text-field>
+          </v-col>
+          <v-col cols="12" md="5"></v-col>
+          <v-col cols="12" md="2">
+            <v-btn elevation="2" color="secondary">
+            <a class="btn btn-blue" :href="download_url" download="thermal_data.csv">{{ envs }} Export to CSV</a>
+            </v-btn>
+          </v-col>
+        </v-row>
       </template>
 
       <v-data-table
@@ -60,7 +69,7 @@
         :search="search"
       >
         <template v-slot:item.participant="{ item }">
-          <div class="text-end">({{ item.participant}}). {{ participants.filter(participant => participant.id == item.participant)[0].gender }}</div>
+          <div class="text-end">({{ item.participant}}). {{ participants?.filter(participant => participant.id == item.participant)[0].gender }}</div>
         </template>
 
         <template v-slot:item.comfort_point="{ item }">
@@ -107,6 +116,7 @@ export default {
         is_user_come_in: '',
         is_door_open: '',
         is_brim_open: '',
+        envv: process.env.NODE_ENV,
       },
       formFields: [
         { key: 'inside_temperature', label: 'Inside Temperature', type: 'number', },
@@ -217,6 +227,13 @@ export default {
       isLoading: false,
     }
   },
+  computed: {
+    download_url() {
+      return process.env.NODE_ENV !== 'production' 
+            ? 'http://localhost:8000/thermaldata/download_csv' 
+            : 'https://thinkitsfree.azurewebsites.net/thermaldata/download_csv';
+    }
+  },
   methods: {
     loadItems() {
       this.loading = true;
@@ -245,7 +262,7 @@ export default {
           }
         }
 
-        // Add participant field'
+        // Add participant field
         temp_form['participant'] = this.participants.filter(item => item.user == this.access_token['user_id'])[0].id;
 
         this.$axios.post('/thermaldata/', temp_form)
@@ -290,15 +307,18 @@ export default {
         }).catch((error: any) => {
           console.error('Failed to fetch participants: ' + error);
         });
+    },
+    exportToCSV() {
+      this.$axios.get('/thermaldata/download_csv');
     }
   },
-  mounted() {
-    this.loadItems();
+  async mounted() {
+    await this.getParticipants();
+    await this.loadItems();
     this.access_token = this.getAccessToken();
   },
   created() {
     this.form_with_options[2].options = this.generateTimeChoices();
-    this.getParticipants();
   }
 }
 </script>
