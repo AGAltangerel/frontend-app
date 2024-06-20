@@ -34,13 +34,14 @@
                                     placeholder="Password"
                                 />
                             </div>
-                            <div v-if="isPasswordInCorrect" class="mt-5 p-2 mb-4 text-sm text-red-800 rounded-sm bg-red-50 dark:bg-gray-100 dark:text-red-400" role="alert">
-                                <span class="font-medium">Please check your password or username!</span>
-                            </div>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-96 group relative flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</button>
+                    <v-btn :loading="isLoading" color="primary" x-large type="submit" class="w-96 group relative flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Login</v-btn>
+                    
+                    <div v-if="isPasswordInCorrect" class="w-96 mt-5 p-2 mb-4 text-sm text-red-800 rounded-sm bg-red-50 dark:bg-gray-100 dark:text-red-400" role="alert">
+                        <p class="font-medium">Please check your username or password!</p>
+                    </div>
                 </form>
             </div>
         </div>
@@ -56,6 +57,7 @@ export default {
             username: "" as String,
             password: "" as String,
             isPasswordInCorrect: false as Boolean,
+            isLoading: false as Boolean,
         }
     },
     watch: {
@@ -73,6 +75,8 @@ export default {
     },
     methods: {
         async login() {
+            this.isLoading = true;
+            this.isPasswordInCorrect = false;
             await this.$axios.post('/api/token/', {
                 "username": this.username,
                 "password": this.password
@@ -80,9 +84,11 @@ export default {
                 const {access, refresh} = response.data;
                 localStorage.setItem('access_token', access);
                 localStorage.setItem('refresh_token', refresh);
+                this.isLoading = false;
                 navigateTo('/');
             })
-            .catch((error) => { 
+            .catch((error) => {
+                this.isLoading = false; 
                 this.isPasswordInCorrect = true;
                 console.error('Login failed: ' + error);
             });

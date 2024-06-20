@@ -1,5 +1,5 @@
 <template>
-    <main>
+    <main class="bg-zinc-950">
         <thermal_data></thermal_data>
     </main>
 </template>
