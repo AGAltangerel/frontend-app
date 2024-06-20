@@ -1,48 +1,53 @@
 <template>
-  <v-container class="h-100 w-80 bg-slate-10">
-    <v-form v-model="valid" ref="form">
-      <v-row>
-        <!-- Loop through formFields for text fields -->
-        <v-col cols="12" md="6" v-for="field in formFields" :key="field.key">
-          <v-text-field
-            v-model="form[field.key]"
-            :label="field.label"
-            :rules="[rules.required]"
-            :type="field.type"
-          ></v-text-field>
-        </v-col>
-        <!-- Custom v-select for permissionsToCopy -->
-        <v-col cols="12" md="6" v-for="selection in form_with_options" :key="selection.key">
-          <v-select
-            :label="selection.label"
-            variant="underlined"
-            no-data-text="Empty"
-            :items="selection.options"
-            v-model="form[selection.key]"
-            return-object
-          >
-            <template v-slot:selection="{ item, props }">
-              <v-list-item v-bind="props" style="padding: 0;" :title="convertToReadableText(item)"></v-list-item>
-            </template>
-            <template v-slot:item="{ item, props }">
-              <v-list-item v-bind="props" :title="convertToReadableText(item)"></v-list-item>
-            </template>
-          </v-select>
-        </v-col>
-        <v-col cols="12">
-          <v-btn elevation="2" color="secondary" :loading="loading" :disabled="loading" @click.prevent="submitForm">Submit</v-btn>
-        </v-col>
-      </v-row>
-    </v-form>
-    <br/>
+  <v-container class="rounded-md shadow-sm h-100 bg-black">
+    <v-row>
+      <v-col>
+        <v-form v-model="valid" ref="form">
+          <v-row>
+            <!-- Loop through formFields for text fields -->
+            <v-col cols="12" md="6" sm="4" v-for="field in formFields" :key="field.key">
+              <v-text-field
+                v-model="form[field.key]"
+                :label="field.label"
+                :rules="[rules.required]"
+                :type="field.type"
+              ></v-text-field>
+            </v-col>
+            <!-- Custom v-select for permissionsToCopy -->
+            <v-col cols="12" md="6" sm="4" v-for="selection in form_with_options" :key="selection.key">
+              <v-select
+                :label="selection.label"
+                no-data-text="Empty"
+                :items="selection.options"
+                v-model="form[selection.key]"
+                :rules="[rules.required]"
+                return-object
+              >
+                <template v-slot:selection="{ item, props }">
+                  <v-list-item v-bind="props" style="padding: 0;" :title="convertToReadableText(item)"></v-list-item>
+                </template>
+                <template v-slot:item="{ item, props }">
+                  <v-list-item v-bind="props" :title="convertToReadableText(item)"></v-list-item>
+                </template>
+              </v-select>
+            </v-col>
+            <v-col cols="12">
+              <v-btn block elevation="2" color="secondary" :loading="loading" :disabled="loading" @click.prevent="submitForm">Submit</v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
+        <br/>
 
-    <v-card
-      title=""
-      flat
-    >
-      <template v-slot:text>
-        <v-row>
-          <v-col cols="12" md="5">
+        <v-card
+          flat
+          variant="outlined"
+        >
+          <v-card-actions>
+            <v-btn elevation="2" color="secondary">
+              <a class="btn btn-blue" :href="download_url" download="thermal_data.csv"> Export to CSV</a>
+            </v-btn>
+          </v-card-actions>
+          <template v-slot:text>
             <v-text-field
               v-model="search"
               append-icon="mdi-magnify"
@@ -50,41 +55,64 @@
               single-line
               hide-details
             ></v-text-field>
-          </v-col>
-          <v-col cols="12" md="5"></v-col>
-          <v-col cols="12" md="2">
-            <v-btn elevation="2" color="secondary">
-            <a class="btn btn-blue" :href="download_url" download="thermal_data.csv">{{ envs }} Export to CSV</a>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </template>
+          </template>
 
-      <v-data-table
-        :headers="headers"
-        :items="serverItems"
-        :items-per-page="itemsPerPage"
-        :loading="loading"
-        :sortable="true"
-        :search="search"
-      >
-        <template v-slot:item.participant="{ item }">
-          <div class="text-end">({{ item.participant}}). {{ participants?.filter(participant => participant.id == item.participant)[0].gender }}</div>
-        </template>
+          <v-data-table
+            :headers="headers"
+            :items="serverItems"
+            :items-per-page="itemsPerPage"
+            :loading="loading"
+            :sortable="true"
+            :search="search"
+            theme="dark"
+          >
+            <template v-slot:item.participant="{ item }" v-if="participants">
+              <div class="text-end">({{ item?.participant}}). {{ participants?.filter(participant => participant.id == item.participant)[0].gender }}</div>
+            </template>
 
-        <template v-slot:item.comfort_point="{ item }">
-          <div class="text-center"> {{ form_with_options.find(i => i.key === "comfort_point")?.options.find(j => j.id == item.comfort_point)?.description }} </div>
-        </template>
+            <template v-slot:item.comfort_point="{ item }">
+              <v-chip class="text-center" :color="getColor(item.comfort_point)"> {{ form_with_options.find(i => i.key === "comfort_point")?.options.find(j => j.id == item.comfort_point)?.description }} </v-chip>
+            </template>
 
-        <template v-slot:item.created_date="{ item }">
-          <div class="text-center">{{ item.created_date.split("T")[0] }}</div>
-        </template>
+            <template v-slot:item.created_date="{ item }">
+              <div class="text-center">{{ item.created_date.split("T")[0] }}</div>
+            </template>
 
-        <template v-slot:item.ger="{ item }">
-          <div class="text-center "> {{ form_with_options.find(i => i.key === "ger")?.options.find(j => j.id == item.ger)?.name }} </div>
-        </template>
-      </v-data-table>
-    </v-card>
+            <template v-slot:item.ger="{ item }">
+              <div class="text-center "> {{ form_with_options.find(i => i.key === "ger")?.options.find(j => j.id == item.ger)?.name }} </div>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-col>
+      <v-col>
+        <v-card>
+          <v-layout>
+            <v-navigation-drawer
+              expand-on-hover
+              location="right"
+              rail
+              theme="dark"
+            >
+              <template v-slot:prepend>
+                <v-list-item
+                  lines="two"
+                  href="https://thinkitsfree.azurewebsites.net/admin"
+                  :prepend-avatar="profile_img_url"
+                  subtitle="Profile"
+                ></v-list-item>
+              </template>
+
+              <v-divider></v-divider>
+
+              <v-list density="compact" mode="out-in" nav>
+                <v-list-item prepend-icon="mdi-logout" title="Logout" value="Logout" @click="navigateTo('/logout')"></v-list-item>
+                <!-- <v-list-item prepend-icon="mdi-account" title="Admin" value="Admin" :link="true" target="_blank" href=""></v-list-item> -->
+              </v-list>
+            </v-navigation-drawer>
+          </v-layout>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -116,7 +144,6 @@ export default {
         is_user_come_in: '',
         is_door_open: '',
         is_brim_open: '',
-        envv: process.env.NODE_ENV,
       },
       formFields: [
         { key: 'inside_temperature', label: 'Inside Temperature', type: 'number', },
@@ -134,13 +161,13 @@ export default {
           key: 'comfort_point', 
           label: 'Comfort Point', 
           options: [
-            { id: -3, description: "Cold" },
-            { id: -2, description: "Cool" },
-            { id: -1, description: "Slightly Cool" },
-            { id: 0, description: "Neutral" },
-            { id: 1, description: "Slightly Warm" },
-            { id: 2, description: "Warm" },
-            { id: 3, description: "Hot" }
+            { id: -3, description: "Cold", color: "#1133cf" },
+            { id: -2, description: "Cool", color: "#0460d9" },
+            { id: -1, description: "Slightly Cool", color: "#0d77bd" },
+            { id: 0, description: "Neutral", color: "green" },
+            { id: 1, description: "Slightly Warm", color: "#b6d904" },
+            { id: 2, description: "Warm", color: "#d9c404" },
+            { id: 3, description: "Hot", color: "#d92f04" }
           ]
         },
         { 
@@ -200,8 +227,8 @@ export default {
         { title: 'Participant', value: 'participant', align: 'end' },
         { title: 'Comfort Point', value: 'comfort_point', align: 'center', sortable: true },
         { title: 'Created Date', value: 'created_date', align: 'end', sortable: true },
-        { title: 'Ger', value: 'ger', align: 'end' },
         { title: 'Timestamp', value: 'timestamp', align: 'end' },
+        { title: 'Ger', value: 'ger', align: 'end' },
         { title: 'Weather Condition', value: 'weather_condition', align: 'end' },
         { title: 'Inside Temperature (°C)', value: 'inside_temperature', align: 'end', sortable: true},
         { title: 'Inside Humidity (%)', value: 'inside_humidity', align: 'end', sortable: true},
@@ -225,6 +252,7 @@ export default {
       access_token: null,
       participants: 0,
       isLoading: false,
+      profile_img_url: "",
     }
   },
   computed: {
@@ -304,18 +332,31 @@ export default {
       this.$axios.get('/participants/')
         .then((response: any) => {
           this.participants = response.data.results;
-        }).catch((error: any) => {
+        })
+        .then(() => {
+          this.access_token = this.getAccessToken();
+        })
+        .then((response: any) => {
+          this.getProfileImage();
+        })
+        .catch((error: any) => {
           console.error('Failed to fetch participants: ' + error);
         });
     },
+    getProfileImage() {
+      this.profile_img_url = this.participants.filter(item => item.user == this.access_token['user_id'])[0].profile_img_url;
+    },
     exportToCSV() {
       this.$axios.get('/thermaldata/download_csv');
-    }
+    },
+    getColor (value: number): string {
+      return this.form_with_options.find(i => i.key === "comfort_point")?.options.find(j => j.id == value)?.color;
+    },
   },
   async mounted() {
     await this.getParticipants();
     await this.loadItems();
-    this.access_token = this.getAccessToken();
+    // await this.getProfileImage();
   },
   created() {
     this.form_with_options[2].options = this.generateTimeChoices();
