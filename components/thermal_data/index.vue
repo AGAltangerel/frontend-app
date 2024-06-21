@@ -81,6 +81,11 @@
             <template v-slot:item.ger="{ item }">
               <div class="text-center "> {{ form_with_options.find(i => i.key === "ger")?.options.find(j => j.id == item.ger)?.name }} </div>
             </template>
+            <template v-slot:item.weather_condition="{ item }">
+              <div class="text-center">
+                {{ form_with_options.find(i => i.key === "weather_condition")?.options.find(j => j.id == item.weather_condition)?.description }}
+              </div>
+            </template>
           </v-data-table>
         </v-card>
       </v-col>
@@ -192,12 +197,12 @@ export default {
         { key: 'is_user_come_in', label: 'Is User Come In', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
         { key: 'is_window_open', label: 'Is Window Open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
         { key: 'weather_condition', label: 'Weather Condition', options: [
-          {"id": "Clear", "description": "Clear"}, 
-          {"id": "Cloudy", "description": "Cloudy"}, 
-          {"id": "Sunny", "description": "Sunny"}, 
-          {"id": "Foggy", "description": "Foggy"}, 
-          {"id": "Rainy", "description": "Rainy"}, 
-          {"id": "Windy", "description": "Windy"}
+            {"id": "0", "description": "Clear"}, 
+            {"id": "1", "description": "Cloudy"}, 
+            {"id": "2", "description": "Sunny"}, 
+            {"id": "3", "description": "Foggy"}, 
+            {"id": "4", "description": "Rainy"}, 
+            {"id": "5", "description": "Windy"}
         ]},
         { key: 'clothing_level', label: 'Clothing Level', options: [
             {"description": "Walking shorts, short-sleeved shirt", "id": 0.36},
@@ -260,20 +265,18 @@ export default {
       return process.env.NODE_ENV !== 'production' 
             ? 'http://localhost:8000/thermaldata/download_csv' 
             : 'https://thinkitsfree.azurewebsites.net/thermaldata/download_csv';
-    }
+    },
   },
   methods: {
     loadItems() {
       this.loading = true;
       this.$axios.get('/thermaldata/')
         .then((response: any) => {
-          console.log(response.data);
           this.serverItems = response.data.results;
           this.totalItems = response.count;
           this.loading = false;
         }).catch((error: any) => {
           this.loading = false;
-          console.error('Failed to fetch thermal data: ' + error);
         });
     },
     submitForm() {

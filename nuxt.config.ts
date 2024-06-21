@@ -3,6 +3,7 @@ import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 export default defineNuxtConfig({
     dev: process.env.NODE_ENV !== 'production',
+    ssr: true,
     devtools: { enabled: true },
     css: ['~/assets/css/main.css'],
     postcss: {
