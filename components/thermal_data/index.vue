@@ -4,7 +4,6 @@
       <v-col>
         <v-form v-model="valid" ref="form">
           <v-row>
-            <!-- Loop through formFields for text fields -->
             <v-col cols="12" md="6" sm="4" v-for="field in formFields" :key="field.key">
               <v-text-field
                 v-model="form[field.key]"
@@ -13,7 +12,6 @@
                 :type="field.type"
               ></v-text-field>
             </v-col>
-            <!-- Custom v-select for permissionsToCopy -->
             <v-col cols="12" md="6" sm="4" v-for="selection in form_with_options" :key="selection.key">
               <v-select
                 :label="selection.label"
@@ -32,16 +30,12 @@
               </v-select>
             </v-col>
             <v-col cols="12">
-              <v-btn block elevation="2" color="secondary" :loading="loading" :disabled="loading" @click.prevent="submitForm">Submit</v-btn>
+              <v-btn block elevation="2" color="secondary" :loading="isFormLoading" :disabled="isFormLoading" @click.prevent="submitForm">Submit</v-btn>
             </v-col>
           </v-row>
         </v-form>
         <br/>
-
-        <v-card
-          flat
-          variant="outlined"
-        >
+        <v-card flat variant="outlined">
           <v-card-actions>
             <v-btn elevation="2" color="secondary">
               <a class="btn btn-blue" :href="download_url" download="thermal_data.csv"> Export to CSV</a>
@@ -56,7 +50,6 @@
               hide-details
             ></v-text-field>
           </template>
-
           <v-data-table
             :headers="headers"
             :items="serverItems"
@@ -67,23 +60,20 @@
             theme="dark"
           >
             <template v-slot:item.participant="{ item }" v-if="participants">
-              <div class="text-end">({{ item?.participant}}). {{ participants?.filter(participant => participant.id == item.participant)[0].gender }}</div>
+              <div class="text-end">({{ item?.participant }}). {{ participants?.find(participant => participant.id == item.participant)?.gender }}</div>
             </template>
-
             <template v-slot:item.comfort_point="{ item }">
-              <v-chip class="text-center" :color="getColor(item.comfort_point)"> {{ form_with_options.find(i => i.key === "comfort_point")?.options.find(j => j.id == item.comfort_point)?.description }} </v-chip>
+              <v-chip class="text-center" :color="getColor(item.comfort_point)"> {{ getDescription('comfort_point', item.comfort_point) }} </v-chip>
             </template>
-
             <template v-slot:item.created_date="{ item }">
-              <div class="text-center">{{ item.created_date.split("T")[0] }}</div>
+              <div class="text-center">{{ formatDate(item.created_date) }}</div>
             </template>
-
             <template v-slot:item.ger="{ item }">
-              <div class="text-center "> {{ form_with_options.find(i => i.key === "ger")?.options.find(j => j.id == item.ger)?.name }} </div>
+              <div class="text-center"> {{ getDescription('ger', item.ger, 'name') }} </div>
             </template>
             <template v-slot:item.weather_condition="{ item }">
               <div class="text-center">
-                {{ form_with_options.find(i => i.key === "weather_condition")?.options.find(j => j.id == item.weather_condition)?.description }}
+                {{ getDescription('weather_condition', item.weather_condition) }}
               </div>
             </template>
           </v-data-table>
@@ -92,26 +82,13 @@
       <v-col>
         <v-card>
           <v-layout>
-            <v-navigation-drawer
-              expand-on-hover
-              location="right"
-              rail
-              theme="dark"
-            >
+            <v-navigation-drawer expand-on-hover location="right" rail theme="dark">
               <template v-slot:prepend>
-                <v-list-item
-                  lines="two"
-                  href="https://thinkitsfree.azurewebsites.net/admin"
-                  :prepend-avatar="profile_img_url"
-                  subtitle="Profile"
-                ></v-list-item>
+                <v-list-item lines="two" href="https://thinkitsfree.azurewebsites.net/admin" :prepend-avatar="profile_img_url" subtitle="Profile"></v-list-item>
               </template>
-
               <v-divider></v-divider>
-
               <v-list density="compact" mode="out-in" nav>
                 <v-list-item prepend-icon="mdi-logout" title="Logout" value="Logout" @click="navigateTo('/logout')"></v-list-item>
-                <!-- <v-list-item prepend-icon="mdi-account" title="Admin" value="Admin" :link="true" target="_blank" href=""></v-list-item> -->
               </v-list>
             </v-navigation-drawer>
           </v-layout>
@@ -256,7 +233,7 @@ export default {
       itemsPerPage: 5,
       access_token: null,
       participants: 0,
-      isLoading: false,
+      isFormLoading: false,
       profile_img_url: "",
     }
   },
@@ -268,44 +245,38 @@ export default {
     },
   },
   methods: {
-    loadItems() {
+    async loadItems() {
       this.loading = true;
-      this.$axios.get('/thermaldata/')
-        .then((response: any) => {
-          this.serverItems = response.data.results;
-          this.totalItems = response.count;
-          this.loading = false;
-        }).catch((error: any) => {
-          this.loading = false;
-        });
+      try {
+        const response = await this.$axios.get('/thermaldata/');
+        this.serverItems = response.data.results;
+        this.totalItems = response.data.count;
+      } catch (error) {
+        console.error('Error loading items:', error);
+      } finally {
+        this.loading = false;
+      }
     },
-    submitForm() {
-      this.isLoading = true;
-      if (this.$refs.form.validate()) {
-        console.log(this.form)
-        const temp_form: any = {};
-
-        for(const key in this.form) {
-          if (typeof(this.form[key]) === 'object') {
-            temp_form[key] = this.form[key].id;
-          } else {
-            temp_form[key] = this.form[key];
-          }
+    async submitForm() {
+      this.isFormLoading = true;
+      this.$refs.form.validate();
+      if (this.$refs.form.isValid) {
+        const temp_form = {};
+        for (const key in this.form) {
+          temp_form[key] = typeof this.form[key] === 'object' ? this.form[key].id : this.form[key];
         }
-
-        // Add participant field
-        temp_form['participant'] = this.participants.filter(item => item.user == this.access_token['user_id'])[0].id;
-
-        this.$axios.post('/thermaldata/', temp_form)
-          .then((response: any) => {
-            console.log('Data added:', response.data);
-            this.loadItems();  // Reload items to show the new data
-            this.$refs.form.reset();
-            this.isLoading = false;
-          })
-          .catch((error: any) => {
-            console.error('Failed to add data: ' + error);
-          });
+        temp_form['participant'] = this.participants.find(item => item.user == this.access_token.user_id).id;
+        try {
+          await this.$axios.post('/thermaldata/', temp_form);
+          this.loadItems();
+          this.$refs.form.reset();
+        } catch (error) {
+          console.error('Failed to add data:', error);
+        } finally {
+          this.isFormLoading = false;
+        }
+      } else {
+        this.isFormLoading = false;
       }
     },
     convertToReadableText(item: any) {
@@ -331,38 +302,41 @@ export default {
     getAccessToken() {
       return decodeToken(localStorage.getItem('access_token'));
     },
-    getParticipants() {
-      this.$axios.get('/participants/')
-        .then((response: any) => {
-          this.participants = response.data.results;
-        })
-        .then(() => {
-          this.access_token = this.getAccessToken();
-        })
-        .then((response: any) => {
-          this.getProfileImage();
-        })
-        .catch((error: any) => {
-          console.error('Failed to fetch participants: ' + error);
-        });
+    async getParticipants() {
+      try {
+        const response = await this.$axios.get('/participants/');
+        this.participants = response.data.results;
+        this.access_token = this.getAccessToken();
+        this.getProfileImage();
+      } catch (error) {
+        console.error('Failed to fetch participants:', error);
+      }
     },
     getProfileImage() {
-      this.profile_img_url = this.participants.filter(item => item.user == this.access_token['user_id'])[0].profile_img_url;
+      const participant = this.participants.find(item => item.user == this.access_token.user_id);
+      this.profile_img_url = participant ? participant.profile_img_url : '';
     },
     exportToCSV() {
       this.$axios.get('/thermaldata/download_csv');
     },
-    getColor (value: number): string {
-      return this.form_with_options.find(i => i.key === "comfort_point")?.options.find(j => j.id == value)?.color;
+    getColor(value) {
+      const option = this.form_with_options.find(i => i.key === 'comfort_point')?.options.find(j => j.id == value);
+      return option ? option.color : '';
+    },
+    getDescription(key, value, subkey = 'description') {
+      const option = this.form_with_options.find(i => i.key === key)?.options.find(j => j.id == value);
+      return option ? option[subkey] : '';
+    },
+    formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString();
     },
   },
   async mounted() {
     await this.getParticipants();
     await this.loadItems();
-    // await this.getProfileImage();
   },
   created() {
-    this.form_with_options[2].options = this.generateTimeChoices();
+    this.form_with_options.find(opt => opt.key === 'timestamp').options = this.generateTimeChoices();
   }
 }
 </script>
