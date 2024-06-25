@@ -29,7 +29,7 @@ export default defineNuxtConfig({
         '@nuxtjs/tailwindcss',
         '@nuxtjs/vuetify',
     ],
-    plugins: ['~/plugins/axios.ts', '~/plugins/toast.ts'],
+    plugins: ['~/plugins/axios.ts'],
     components: true,
     build: {
         transpile: ['vuetify'],
