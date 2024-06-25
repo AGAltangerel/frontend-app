@@ -30,6 +30,7 @@
               </v-select>
             </v-col>
             <v-col cols="12">
+              <v-btn @click="showToast('Test')">Toast</v-btn>
               <v-btn block elevation="2" color="secondary" :loading="isFormLoading" :disabled="isFormLoading" @click.prevent="submitForm">Submit</v-btn>
             </v-col>
           </v-row>
@@ -268,6 +269,8 @@ export default {
         temp_form['participant'] = this.participants.find(item => item.user == this.access_token.user_id).id;
         try {
           await this.$axios.post('/thermaldata/', temp_form);
+          await this.storeCurrentFormNext();
+          await this.showToast('Data added successfully', 'success');
           this.loadItems();
           this.$refs.form.reset();
         } catch (error) {
@@ -327,16 +330,70 @@ export default {
       const option = this.form_with_options.find(i => i.key === key)?.options.find(j => j.id == value);
       return option ? option[subkey] : '';
     },
-    formatDate(dateString) {
+    formatDate(dateString: string) {
       return new Date(dateString).toLocaleDateString();
     },
+    async storeCurrentFormNext() {
+      console.log(this.form);
+      this.form.inside_humidity = '';
+      this.form.inside_temperature = '';
+      this.form.outside_humidity = '';
+      this.form.outside_temperature = '';
+      this.form.heart_rate = '';
+      this.form.skin_temperature = '';
+      this.form.metabolic_rate = '';
+      this.form.comfort_point = null;
+
+      localStorage.setItem('latest_thermal_data', JSON.stringify(this.form));
+    },
+    async loadLatestStoredForm() {
+      const latest_form = localStorage.getItem('latest_thermal_data');
+      if (latest_form) {
+        this.form = JSON.parse(latest_form);
+      }
+    },
+    async serializeTimeStamps() {
+      const timeList = this.generateTimeChoices();
+      this.form_with_options.find(opt => opt.key === 'timestamp').options = timeList;
+    },
+    async showToast(msg: string, type: string, duration: number=6000) {
+      switch (type) {
+        case 'error':
+          this.$toast.error(msg, {
+            duration: duration
+          });
+          break;
+        case 'success':
+          this.$toast.success(msg, {
+            duration: duration
+          });
+          break;
+        case 'warning':
+          this.$toast.warning(msg, {
+            duration: duration
+          });
+          break;
+        case 'info':
+          this.$toast.info(msg, {
+            duration: duration
+          });
+          break;
+        default:
+          this.$toast.default(msg, {
+            duration: duration
+          });
+          break;
+      }
+    }
   },
   async mounted() {
+    await this.serializeTimeStamps();
+    await this.loadLatestStoredForm();
     await this.getParticipants();
     await this.loadItems();
+
   },
   created() {
-    this.form_with_options.find(opt => opt.key === 'timestamp').options = this.generateTimeChoices();
   }
 }
 </script>

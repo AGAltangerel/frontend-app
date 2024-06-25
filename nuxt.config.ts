@@ -1,5 +1,5 @@
-import { defineNuxtConfig } from 'nuxt/config'
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import { defineNuxtConfig } from 'nuxt/config';
+import vuetify from 'vite-plugin-vuetify';
 
 export default defineNuxtConfig({
     dev: process.env.NODE_ENV !== 'production',
@@ -12,8 +12,8 @@ export default defineNuxtConfig({
             autoprefixer: {},
         },
     },
-    server: {
-        port: process.env.PORT || 80,
+        server: {
+        port: process.env.PORT || 3000, // default port 3000
         host: '0.0.0.0',
     },
     router: {
@@ -21,7 +21,7 @@ export default defineNuxtConfig({
     },
     ui: {
         container: {
-            constrained: 'max-w-5xl'
+        constrained: 'max-w-5xl'
         }
     },
     buildModules: [
@@ -29,24 +29,32 @@ export default defineNuxtConfig({
         '@nuxtjs/tailwindcss',
         '@nuxtjs/vuetify',
     ],
-    plugins: ['~/plugins/axios.ts', ],
+    plugins: ['~/plugins/axios.ts', '~/plugins/toast.ts'],
     components: true,
     build: {
-        transpile: ['/^@nuxt/', 'vuetify',],
+        transpile: ['vuetify'],
     },
     modules: [
         (_options, nuxt) => {
-            nuxt.hooks.hook('vite:extendConfig', (config) => {
-              // @ts-expect-error
-                config.plugins.push(vuetify({ autoImport: true }))
-            })
+            nuxt.hook('vite:extendConfig', (config) => {
+                config.plugins.push(vuetify({ autoImport: true }));
+            });
         },
+        
     ],
     vite: {
+        optimizeDeps: {
+            include: ['@mdi/js'],
+        },
         vue: {
-            template: {
-                transformAssetUrls,
-            }
-        }
-    }
-})
+        template: {
+            transformAssetUrls: {
+            img: ['src', 'data-src'],
+            source: 'src',
+            img: 'src',
+            image: 'xlink:href',
+            },
+        },
+        },
+    },
+});
