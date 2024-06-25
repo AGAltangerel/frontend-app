@@ -13,7 +13,7 @@ export default defineNuxtConfig({
         },
     },
         server: {
-        port: process.env.PORT || 3000, // default port 3000
+        port: process.env.PORT || 80, // default port 80
         host: '0.0.0.0',
     },
     router: {
