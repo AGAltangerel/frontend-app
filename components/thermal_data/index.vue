@@ -94,6 +94,16 @@
             </v-navigation-drawer>
           </v-layout>
         </v-card>
+
+        <v-snackbar
+          :timeout="timeout"
+          :color="color"
+          elevation="24"
+          v-model="isToast"
+          top="true"
+        >
+          {{ alertMsg}}
+        </v-snackbar>
       </v-col>
     </v-row>
   </v-container>
@@ -107,6 +117,11 @@ export default {
   middleware: 'auth',
   data() {
     return {
+      isToast: false,
+      alertMsg: "",
+      timeout: 6000,
+      color: '',
+
       valid: false,
       search: '',
       form: {
@@ -357,33 +372,10 @@ export default {
       this.form_with_options.find(opt => opt.key === 'timestamp').options = timeList;
     },
     async showToast(msg: string, type: string, duration: number=6000) {
-      switch (type) {
-        case 'error':
-          this.$toast.error(msg, {
-            duration: duration
-          });
-          break;
-        case 'success':
-          this.$toast.success(msg, {
-            duration: duration
-          });
-          break;
-        case 'warning':
-          this.$toast.warning(msg, {
-            duration: duration
-          });
-          break;
-        case 'info':
-          this.$toast.info(msg, {
-            duration: duration
-          });
-          break;
-        default:
-          this.$toast.default(msg, {
-            duration: duration
-          });
-          break;
-      }
+      this.alertMsg = msg;
+      this.timeout = duration;
+      this.color = type;
+      this.isToast = true;
     }
   },
   async mounted() {
