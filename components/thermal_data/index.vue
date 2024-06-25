@@ -30,7 +30,6 @@
               </v-select>
             </v-col>
             <v-col cols="12">
-              <v-btn @click="showToast('Test')">Toast</v-btn>
               <v-btn block elevation="2" color="secondary" :loading="isFormLoading" :disabled="isFormLoading" @click.prevent="submitForm">Submit</v-btn>
             </v-col>
           </v-row>
