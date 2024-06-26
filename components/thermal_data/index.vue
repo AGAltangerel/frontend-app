@@ -138,23 +138,25 @@ export default {
         // activity_level: '',
         clothing_level: '',
         sleep_point: '',
-        is_user_come_in: '',
-        is_door_open: '',
-        is_brim_open: '',
+        is_walking_outside: false as boolean,
+        is_user_come_in: false as boolean,
+        is_door_open: false as boolean,
+        is_brim_open: false as boolean
       },
       formFields: [
-        { key: 'inside_temperature', label: 'Inside Temperature', type: 'number', },
-        { key: 'inside_humidity', label: 'Inside Humidity', type: 'number'},
-        { key: 'outside_temperature', label: 'Outside Temperature', type: 'number'},
-        { key: 'outside_humidity', label: 'Outside Humidity', type: 'number'},
-        { key: 'heart_rate', label: 'Heart Rate', type: 'number'},
-        { key: 'skin_temperature', label: 'Skin Temperature', type: 'number'},
-        { key: 'metabolic_rate', label: 'Metabolic Rate', type: 'number'},
-        // { key: 'activity_level', label: 'Activity Level', type: 'number'},
-        { key: 'sleep_point', label: 'Sleep Point', type: 'number'},
+        { display: true, key: 'inside_temperature', label: 'Inside Temperature', type: 'number', },
+        { display: true, key: 'inside_humidity', label: 'Inside Humidity', type: 'number'},
+        { display: true, key: 'outside_temperature', label: 'Outside Temperature', type: 'number'},
+        { display: true, key: 'outside_humidity', label: 'Outside Humidity', type: 'number'},
+        { display: true, key: 'heart_rate', label: 'Heart Rate', type: 'number'},
+        { display: true, key: 'skin_temperature', label: 'Skin Temperature', type: 'number'},
+        { display: true, key: 'metabolic_rate', label: 'Metabolic Rate', type: 'number'},
+        // { display: false,  key: 'activity_level', label: 'Activity Level', type: 'number'},
+        { display: true, key: 'sleep_point', label: 'Sleep Point', type: 'number'},
       ],
       form_with_options: [
         { 
+          display: true,
           key: 'comfort_point', 
           label: 'Comfort Point', 
           options: [
@@ -168,6 +170,7 @@ export default {
           ]
         },
         { 
+          display: true,
           key: 'ger', 
           label: 'Ger', 
           options: [
@@ -183,12 +186,13 @@ export default {
             }
           ]
         },
-        { key: 'timestamp', label: 'Timestamp', options: []},
-        { key: 'is_brim_open', label: 'Is Brim open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}]},
-        { key: 'is_door_open', label: 'Is Door Open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
-        { key: 'is_user_come_in', label: 'Is User Come In', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
-        { key: 'is_window_open', label: 'Is Window Open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
-        { key: 'weather_condition', label: 'Weather Condition', options: [
+        { display: true, key: 'timestamp', label: 'Timestamp', options: []},
+        { display: true, key: 'is_walking_outside', label: 'Is Walking Outside', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
+        { display: true, key: 'is_brim_open', label: 'Is Brim open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}]},
+        { display: true, key: 'is_door_open', label: 'Is Door Open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
+        { display: true, key: 'is_user_come_in', label: 'Is User Come In', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
+        { display: true, key: 'is_window_open', label: 'Is Window Open', options: [{"id": true, "description": "Yes"}, {"id": false, "description": "No"}] },
+        { display: true, key: 'weather_condition', label: 'Weather Condition', options: [
             {"id": "0", "description": "Clear"}, 
             {"id": "1", "description": "Cloudy"}, 
             {"id": "2", "description": "Sunny"}, 
@@ -196,7 +200,7 @@ export default {
             {"id": "4", "description": "Rainy"}, 
             {"id": "5", "description": "Windy"}
         ]},
-        { key: 'clothing_level', label: 'Clothing Level', options: [
+        { display: true, key: 'clothing_level', label: 'Clothing Level', options: [
             {"description": "Walking shorts, short-sleeved shirt", "id": 0.36},
             {"description": "Knee-length skirt, short-sleeved shirt, panty hose, sandals", "id": 0.54},
             {"description": "Trousers, short-sleeved shirt", "id": 0.57},
@@ -237,6 +241,7 @@ export default {
         // { title: 'Activity Level (METs)', value: 'activity_level', align: 'end' },
         { title: 'Clothing Level (clo)', value: 'clothing_level', align: 'end' },
         { title: 'Sleep Point', value: 'sleep_point', align: 'end' },
+        { title: 'Is Walking Outside', value: 'is_walking_outside', align: 'end' },
         { title: 'Is User Come In', value: 'is_user_come_in', align: 'end' },
         { title: 'Is Door Open', value: 'is_door_open', align: 'end' },
         { title: 'Is Window Open', value: 'is_window_open', align: 'end' },
@@ -250,6 +255,8 @@ export default {
       participants: 0,
       isFormLoading: false,
       profile_img_url: "",
+      yes: {"id": true, "description": "Yes"},
+      no: {"id": false, "description": "No"},
     }
   },
   computed: {
@@ -301,9 +308,9 @@ export default {
     },
     generateTimeChoices() {
       const startTime = new Date();
-      startTime.setHours(8, 10, 0, 0); // 8:10 AM
+      startTime.setHours(0, 0, 0, 0); // 8:10 AM
       const endTime = new Date();
-      endTime.setHours(23, 0, 0, 0); // 11:00 PM
+      endTime.setHours(23, 59, 59, 59); // 11:00 PM
       const timeList = [];
 
       const options = { hour: '2-digit', minute: '2-digit', hour12: true };
