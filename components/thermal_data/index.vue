@@ -151,7 +151,7 @@ export default {
         { display: true, key: 'heart_rate', label: 'Heart Rate', type: 'number'},
         { display: true, key: 'skin_temperature', label: 'Skin Temperature', type: 'number'},
         { display: true, key: 'metabolic_rate', label: 'Metabolic Rate', type: 'number'},
-        // { display: false,  key: 'activity_level', label: 'Activity Level', type: 'number'},
+      // { display: false,  key: 'activity_level', label: 'Activity Level', type: 'number'},
         { display: true, key: 'sleep_point', label: 'Sleep Point', type: 'number'},
       ],
       form_with_options: [
